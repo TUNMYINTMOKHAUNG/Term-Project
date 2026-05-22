@@ -1,0 +1,25 @@
+package com.example.myapplication.utils
+
+object Constants {
+
+    val clothingTypes = listOf(
+        "Top",
+        "Bottom",
+        "Outerwear"
+    )
+
+    val thicknessOptions = listOf(
+        "Thin",
+        "Medium",
+        "Thick"
+    )
+
+    val styleOptions = listOf(
+        "Casual",
+        "Minimal",
+        "Sporty",
+        "Vintage",
+        "Streetwear",
+        "Formal"
+    )
+}
