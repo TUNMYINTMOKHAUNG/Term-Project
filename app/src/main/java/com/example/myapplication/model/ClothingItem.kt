@@ -10,7 +10,6 @@ data class ClothingItem(
     val styleKeywords: List<String> = emptyList(),
 
     val thickness: String = "",
-    val season: String = "",
 
     val createdAt: Long = System.currentTimeMillis()
 )
