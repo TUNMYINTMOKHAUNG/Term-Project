@@ -5,6 +5,7 @@ data class ClothingItem(
     val imageUrl: String = "",
 
     val type: String = "",
+    val name: String = "",
     val color: String = "",
 
     val styleKeywords: List<String> = emptyList(),
