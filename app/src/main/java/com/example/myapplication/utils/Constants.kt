@@ -5,7 +5,8 @@ object Constants {
     val clothingTypes = listOf(
         "Top",
         "Bottom",
-        "Outerwear"
+        "Outerwear",
+        "One-piece"
     )
 
     val thicknessOptions = listOf(

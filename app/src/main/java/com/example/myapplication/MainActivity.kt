@@ -30,15 +30,20 @@ class MainActivity : AppCompatActivity() {
                 response: Response<WeatherResponse>
             ) {
                 if (response.isSuccessful) {
-                    val temp = response.body()?.main?.temp ?: 0.0  // ← inside here
-                    Log.d("WEATHER", "Temperature: $temp")
+                    val body = response.body()
+                    val temp = body?.main?.temp ?: 0.0
+                    val condition = body?.weather?.firstOrNull()?.main ?: "Clear"
+                    val windSpeed = body?.wind?.speed ?: 0.0
+                    val humidity = body?.main?.humidity ?: 50
 
-                    val intent = Intent(
-                        this@MainActivity,
-                        RecommendationActivity::class.java
-                    )
+                    Log.d("WEATHER", "Temp: $temp, Condition: $condition, Wind: $windSpeed, Humidity: $humidity")
+
+                    val intent = Intent(this@MainActivity, RecommendationActivity::class.java)
                     intent.putExtra("TEMPERATURE", temp)
-                    startActivity(intent)  // ← navigate to recommendation screen
+                    intent.putExtra("CONDITION", condition)
+                    intent.putExtra("WIND_SPEED", windSpeed)
+                    intent.putExtra("HUMIDITY", humidity)
+                    startActivity(intent)
                 }
             }
 

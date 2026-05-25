@@ -33,12 +33,71 @@
 
     </LinearLayout>
 
+    <!-- Filter Buttons -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:background="#FFFFFF"
+        android:elevation="2dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:gravity="center_vertical">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipAll"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="All"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipTops"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tops"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipBottoms"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bottoms"
+                android:layout_marginEnd="8dp"
+                style="@style/Widget.MaterialComponents.Chip.Choice"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipOuterwear"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Outerwear"
+                style="@style/Widget.MaterialComponents.Chip.Choice"/>
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipOnepiece"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="One-piece"
+                style="@style/Widget.MaterialComponents.Chip.Choice"/>
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
     <!-- Empty state -->
     <TextView
         android:id="@+id/emptyText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="No clothes found for today's weather.\nTry adding some to your closet!"
+        android:text="No clothes found for today's weather."
         android:textSize="15sp"
         android:textColor="#AAAAAA"
         android:gravity="center"

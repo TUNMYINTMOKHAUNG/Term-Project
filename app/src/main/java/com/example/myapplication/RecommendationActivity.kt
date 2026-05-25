@@ -1,15 +1,17 @@
 package com.example.myapplication
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.myapplication.closet.ClothingAdapter
 import com.example.myapplication.data.FirebaseManager
 import com.example.myapplication.model.ClothingItem
+import com.example.myapplication.closet.ClothingAdapter
 import com.example.myapplication.recommendation.WeatherRecommendationManager
+import com.google.android.material.chip.Chip
 
 class RecommendationActivity : AppCompatActivity() {
 
@@ -26,26 +28,59 @@ class RecommendationActivity : AppCompatActivity() {
         weatherText = findViewById(R.id.weatherInfoText)
         emptyText = findViewById(R.id.emptyText)
 
-        // Get temp passed from MainActivity
         val temp = intent.getDoubleExtra("TEMPERATURE", 20.0)
-        val thickness = WeatherRecommendationManager.getRecommendedThickness(temp)
+        val condition = intent.getStringExtra("CONDITION") ?: "Clear"
+        val windSpeed = intent.getDoubleExtra("WIND_SPEED", 0.0)
+        val humidity = intent.getIntExtra("HUMIDITY", 50)
 
-        weatherText.text = "Today: ${temp}°C — Recommending $thickness clothes"
+        val advice = WeatherRecommendationManager.getWeatherAdvice(
+            temp, condition, windSpeed, humidity
+        )
 
-        // Setup RecyclerView with 2-column grid
+        weatherText.text = advice.summary
+
+        // Setup RecyclerView
+        // Setup RecyclerView
         adapter = ClothingAdapter(emptyList())
         recyclerView.layoutManager = GridLayoutManager(this, 2)
         recyclerView.adapter = adapter
 
-        loadRecommendedClothes(thickness)
+// ← Add chip filter code RIGHT HERE
+        val chipAll       = findViewById<Chip>(R.id.chipAll)
+        val chipTops      = findViewById<Chip>(R.id.chipTops)
+        val chipBottoms   = findViewById<Chip>(R.id.chipBottoms)
+        val chipOuterwear = findViewById<Chip>(R.id.chipOuterwear)
+        val chipOnepiece = findViewById<Chip>(R.id.chipOnepiece)
+
+        chipAll.isChecked = true
+        chipAll.setOnClickListener       { adapter.filterByType("All") }
+        chipTops.setOnClickListener      { adapter.filterByType("Top") }
+        chipBottoms.setOnClickListener   { adapter.filterByType("Bottom") }
+        chipOuterwear.setOnClickListener { adapter.filterByType("Outerwear") }
+        chipOnepiece.setOnClickListener { adapter.filterByType("One-piece") }
+
+// Then this stays at the bottom
+        loadRecommendedClothes(advice.thickness, advice.needsRainGear, advice.needsWindBreaker)
     }
 
-    private fun loadRecommendedClothes(thickness: String) {
-        FirebaseManager.firestore
+    private fun loadRecommendedClothes(
+        thickness: String,
+        needsRainGear: Boolean,
+        needsWindBreaker: Boolean
+    ) {
+        var query = FirebaseManager.firestore
             .collection("clothingItems")
             .whereEqualTo("thickness", thickness)
-            .get()
+
+        if (needsRainGear) {
+            query = FirebaseManager.firestore
+                .collection("clothingItems")
+                .whereArrayContains("styleKeywords", "Waterproof")
+        }
+
+        query.get()
             .addOnSuccessListener { result ->
+                Log.d("FIRESTORE", "Docs found: ${result.size()}")
                 val items = result.map { it.toObject(ClothingItem::class.java) }
                 if (items.isEmpty()) {
                     emptyText.visibility = View.VISIBLE

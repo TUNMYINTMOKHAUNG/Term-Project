@@ -6,7 +6,8 @@ data class ClothingItem(
 
     val type: String = "",
     val name: String = "",
-    val color: String = "",
+    val color: List<String> = emptyList(),
+    val pattern: String = "",
 
     val styleKeywords: List<String> = emptyList(),
 
