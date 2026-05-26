@@ -60,23 +60,16 @@ class RecommendationActivity : AppCompatActivity() {
         chipOnepiece.setOnClickListener { adapter.filterByType("One-piece") }
 
 // Then this stays at the bottom
-        loadRecommendedClothes(advice.thickness, advice.needsRainGear, advice.needsWindBreaker)
+        loadRecommendedClothes(advice.thickness)
     }
 
     private fun loadRecommendedClothes(
         thickness: String,
-        needsRainGear: Boolean,
-        needsWindBreaker: Boolean
     ) {
         var query = FirebaseManager.firestore
             .collection("clothingItems")
             .whereEqualTo("thickness", thickness)
 
-        if (needsRainGear) {
-            query = FirebaseManager.firestore
-                .collection("clothingItems")
-                .whereArrayContains("styleKeywords", "Waterproof")
-        }
 
         query.get()
             .addOnSuccessListener { result ->

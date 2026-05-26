@@ -9,6 +9,7 @@ import com.example.myapplication.networkapi.RetrofitInstance
 import com.example.myapplication.networkapi.WeatherResponse
 import com.example.myapplication.RecommendationActivity
 import com.example.myapplication.recommendation.WeatherRecommendationManager
+import com.example.myapplication.DressroomActivity
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response

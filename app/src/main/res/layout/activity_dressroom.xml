@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#FAFAFA">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="20dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Dressroom"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#222222"
+            android:layout_weight="1"/>
+
+        <!-- Weather button at top right -->
+        <Button
+            android:id="@+id/weatherToggleBtn"
+            android:layout_width="120dp"
+            android:layout_height="40dp"
+            android:backgroundTint="#4CAF50"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="⛅ Weather: ON"
+            android:textColor="#FFFFFF"
+            android:textSize="12sp"
+            app:cornerRadius="8dp" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingEnd="12dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Outerwear"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#888888"
+                android:layout_marginBottom="4dp"/>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardOuterwear"
+                android:layout_width="match_parent"
+                android:layout_height="130dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="#F0F0F0"
+                app:cardElevation="0dp">
+                <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                    <TextView android:id="@+id/plusOuterwear" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+" android:textSize="40sp" android:textColor="#CCCCCC" android:layout_gravity="center"/>
+                    <ImageView android:id="@+id/outerwearImage" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop"/>
+                    <ImageView android:id="@+id/removeOuterwear" android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="top|end" android:layout_margin="8dp" android:src="@android:drawable/ic_menu_close_clear_cancel" android:background="#88FFFFFF" android:visibility="gone"/>
+                </FrameLayout>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Top"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#888888"
+                android:layout_marginBottom="4dp"/>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardTop"
+                android:layout_width="match_parent"
+                android:layout_height="130dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="#F0F0F0"
+                app:cardElevation="0dp">
+                <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                    <TextView android:id="@+id/plusTop" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+" android:textSize="40sp" android:textColor="#CCCCCC" android:layout_gravity="center"/>
+                    <ImageView android:id="@+id/topImage" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop"/>
+                    <ImageView android:id="@+id/removeTop" android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="top|end" android:layout_margin="8dp" android:src="@android:drawable/ic_menu_close_clear_cancel" android:background="#88FFFFFF" android:visibility="gone"/>
+                </FrameLayout>
+            </androidx.cardview.widget.CardView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bottom"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#888888"
+                android:layout_marginBottom="4dp"/>
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cardBottom"
+                android:layout_width="match_parent"
+                android:layout_height="130dp"
+                app:cardCornerRadius="16dp"
+                app:cardBackgroundColor="#F0F0F0"
+                app:cardElevation="0dp">
+                <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                    <TextView android:id="@+id/plusBottom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+" android:textSize="40sp" android:textColor="#CCCCCC" android:layout_gravity="center"/>
+                    <ImageView android:id="@+id/bottomImage" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop"/>
+                    <ImageView android:id="@+id/removeBottom" android:layout_width="24dp" android:layout_height="24dp" android:layout_gravity="top|end" android:layout_margin="8dp" android:src="@android:drawable/ic_menu_close_clear_cancel" android:background="#88FFFFFF" android:visibility="gone"/>
+                </FrameLayout>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Recommendations"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#888888"
+                android:layout_marginBottom="8dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/unifiedMatchesRecycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:paddingBottom="16dp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/getFeedbackButton"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Get AI Feedback"
+        android:textStyle="bold"
+        android:layout_margin="16dp"
+        android:backgroundTint="#E8E8E8"
+        android:textColor="#777777"
+        app:cornerRadius="12dp"/>
+
+</LinearLayout>

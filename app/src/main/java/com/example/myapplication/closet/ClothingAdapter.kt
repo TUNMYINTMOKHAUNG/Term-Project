@@ -12,6 +12,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.myapplication.R
 import com.example.myapplication.model.ClothingItem
+import android.content.Intent
+import com.example.myapplication.DressroomActivity
 
 class ClothingAdapter(
     private var items: List<ClothingItem>
@@ -74,6 +76,12 @@ class ClothingAdapter(
 //        } else {
 //            holder.patternBadge.visibility = View.GONE
 //        }
+
+        holder.itemView.setOnClickListener {
+            val intent = Intent(holder.itemView.context, DressroomActivity::class.java)
+            intent.putExtra("SELECTED_CLOTHING", item)
+            holder.itemView.context.startActivity(intent)
+        }
     }
 
     override fun getItemCount() = items.size
