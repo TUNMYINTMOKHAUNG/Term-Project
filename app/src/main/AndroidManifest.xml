@@ -26,5 +26,7 @@
 
         <activity android:name=".DressroomActivity"/>
 
+        <activity android:name=".FeedbackActivity" />
+
     </application>
 </manifest>

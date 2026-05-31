@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#FAFAFA">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Styling Feedback"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#222222"
+        android:layout_marginBottom="20dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Describe the event or occasion:"
+        android:textSize="14sp"
+        android:textColor="#666666"
+        android:layout_marginBottom="8dp"/>
+
+    <EditText
+        android:id="@+id/eventInput"
+        android:layout_width="match_parent"
+        android:layout_height="80dp"
+        android:hint="e.g., Casual office meeting, dinner date, weekend brunch..."
+        android:padding="12dp"
+        android:gravity="top"
+        android:background="@drawable/edit_text_bg"
+        android:textColor="#333333"
+        android:textColorHint="#AAAAAA"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
+        android:id="@+id/generateBtn"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:text="Generate Feedback"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#4CAF50"
+        android:layout_marginBottom="16dp"/>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/feedbackText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Your feedback will appear here..."
+            android:textSize="14sp"
+            android:textColor="#333333"
+            android:padding="16dp"
+            android:background="#FFFFFF"
+            android:lineSpacingMultiplier="1.5"/>
+
+    </ScrollView>
+
+</LinearLayout>

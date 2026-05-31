@@ -19,6 +19,8 @@ import com.example.myapplication.dressroom.DressroomMatchAdapter
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import android.content.Intent
+import android.widget.Toast
 
 class DressroomActivity : AppCompatActivity() {
 
@@ -107,6 +109,23 @@ class DressroomActivity : AppCompatActivity() {
 
         findViewById<ImageView>(R.id.removeOuterwear).setOnClickListener {
             setSlotItem("Outerwear", null)
+        }
+
+        findViewById<Button>(R.id.getFeedbackButton).setOnClickListener {
+            if (currentTop == null || currentBottom == null) {
+                android.widget.Toast.makeText(
+                    this,
+                    "Please select at least Top and Bottom",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show()
+                return@setOnClickListener
+            }
+
+            val intent = Intent(this, FeedbackActivity::class.java)
+            intent.putExtra("TOP", currentTop)
+            intent.putExtra("BOTTOM", currentBottom)
+            intent.putExtra("OUTERWEAR", currentOuterwear)
+            startActivity(intent)
         }
     }
 
