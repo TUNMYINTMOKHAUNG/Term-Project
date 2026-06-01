@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.appbar.AppBarLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/white"
+    app:elevation="0dp">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        app:titleCentered="true"
+        app:title="My Closet"
+        app:titleTextAppearance="@style/TextAppearance.Material3.HeadlineMedium"
+        app:navigationIcon="@drawable/ic_checkroom"
+        app:navigationIconTint="#5D5CDE"
+        app:menu="@menu/top_app_bar_menu" />
+
+</com.google.android.material.appbar.AppBarLayout>

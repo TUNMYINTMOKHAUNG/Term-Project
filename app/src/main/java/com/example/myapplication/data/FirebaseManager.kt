@@ -1,11 +1,28 @@
 package com.example.myapplication.data
 
-import com.google.firebase.firestore.FirebaseFirestore
+import android.net.Uri
 import com.google.firebase.storage.FirebaseStorage
+import java.util.UUID
 
 object FirebaseManager {
+    private val storage = FirebaseStorage.getInstance().reference
 
-    val firestore = FirebaseFirestore.getInstance()
+    fun uploadClothingImage(
+        imageUri: Uri,
+        onSuccess: (String) -> Unit,
+        onFailure: (Exception) -> Unit
+    ) {
+        val fileName = "closet/${UUID.randomUUID()}.jpg"
+        val ref = storage.child(fileName)
 
-    val storage = FirebaseStorage.getInstance()
+        ref.putFile(imageUri)
+            .addOnSuccessListener {
+                ref.downloadUrl.addOnSuccessListener { uri ->
+                    onSuccess(uri.toString())
+                }
+            }
+            .addOnFailureListener { exception ->
+                onFailure(exception)
+            }
+    }
 }
