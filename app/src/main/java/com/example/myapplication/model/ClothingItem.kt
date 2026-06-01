@@ -1,11 +1,15 @@
 package com.example.myapplication.model
 
-import java.io.Serializable // Import this
+import java.io.Serializable
 
 data class ClothingItem(
     val id: String = "",
+    val imageUrl: String = "",
     val type: String = "",
-    val color: String = "",
-    val style: List<String> = emptyList(),
-    val imageUrl: String = ""
+    val name: String = "",
+    val color: List<String> = emptyList(),
+    val pattern: String = "",
+    val styleKeywords: List<String> = emptyList(), // Your working field
+    val thickness: String = "",
+    val createdAt: Long = System.currentTimeMillis()
 ) : Serializable

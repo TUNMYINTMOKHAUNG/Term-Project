@@ -58,7 +58,7 @@ class AnalysisActivity : AppCompatActivity() {
             id = UUID.randomUUID().toString(),
             imageUrl = "",  // Set after Firebase Storage upload
             type = binding.typeDropdown.text.toString(),
-            color = binding.tvColorName.text.toString()
+            color = listOf(binding.tvColorName.text.toString()), //list
         )
         db.collection("users").document(uid)
             .collection("closet").document(item.id)

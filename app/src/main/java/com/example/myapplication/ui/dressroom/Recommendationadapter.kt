@@ -29,14 +29,14 @@ class RecommendationAdapter(
     override fun onBindViewHolder(holder: VH, position: Int) {
         val item = items[position]
         with(holder.binding) {
-            clothingLabel.text = "${item.type}  ·  ${item.color}"
+//            clothingLabel.text = "${item.type}  ·  ${item.color.joinToString(", ")}"
+
             Glide.with(root.context)
                 .load(item.imageUrl)
                 .centerCrop()
                 .into(clothingImage)
 
-            // The "+" button adds the item directly to the matching slot
-            btnAdd.setOnClickListener { onItemClick(item) }
+            // DELETE THE OLD btnAdd LINE AND KEEP ONLY THIS:
             root.setOnClickListener { onItemClick(item) }
         }
     }
