@@ -55,27 +55,17 @@
                     android:id="@+id/typeDropdown"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="none" />
+                    android:inputType="none"
+                    android:contentDescription="Detected clothing classification type selection" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <LinearLayout
+                android:id="@+id/mixedColorsContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:layout_marginTop="16dp"
-                android:gravity="center_vertical">
-                <View
-                    android:id="@+id/colorPreview"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:background="@drawable/color_circle" />
-                <TextView
-                    android:id="@+id/tvColorName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="12dp"
-                    android:text="Lavender (#5D5CDE)" />
-            </LinearLayout>
+                android:gravity="center_vertical" />
 
             <TextView
                 android:text="Style Keywords"
@@ -88,6 +78,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp" />
+
         </LinearLayout>
     </ScrollView>
 

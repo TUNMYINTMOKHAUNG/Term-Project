@@ -9,8 +9,11 @@ object MatchingEngine {
     ): List<ClothingItem> {
         return allItems.filter { item ->
             val isDifferentCategory = item.type != selected.type
-            val styleMatch = item.style.any { it in selected.style }
-            val colorMatch = isColorCompatible(selected.color, item.color)
+            val styleMatch = item.styleKeywords.any { it in selected.styleKeywords }
+            val colorMatch = isColorCompatible( //fixed temporarity cuz color should be lists
+                selected.color.firstOrNull() ?: "#FFFFFF", // Falls back to white if empty
+                item.color.firstOrNull() ?: "#FFFFFF"
+            )
             isDifferentCategory && (styleMatch || colorMatch)
         }
     }

@@ -6,278 +6,191 @@
     android:layout_height="match_parent"
     android:background="#FBF8FE">
 
-    <!-- Toolbar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="#FBF8FE"
-        app:title="Dressroom"
-        app:titleTextColor="#1A1A1A"
-        app:navigationIcon="@drawable/ic_arrow_back"
-        app:navigationIconTint="#1A1A1A"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingEnd="16dp">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dressroom"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="#1C1B1F"
+                android:layout_alignParentStart="true"
+                android:layout_centerInParent="true"/>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/weatherToggleBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_alignParentEnd="true"
+                android:layout_centerInParent="true"
+                android:text="CC Weather: ON"
+                android:textSize="12sp"
+                app:cornerRadius="8dp"
+                android:backgroundTint="#4CAF50"
+                android:textColor="#FFFFFF"/>
+        </RelativeLayout>
+    </com.google.android.material.appbar.MaterialToolbar>
 
-    <!-- Left panel: clothing slots -->
-    <androidx.core.widget.NestedScrollView
-        android:id="@+id/scrollSlots"
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/outfitTypeToggleGroup"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
+        app:singleSelection="true"
+        app:selectionRequired="true"
+        app:checkedButton="@id/btnModeSeparates"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/guidelineCenter">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModeSeparates"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="2-Piece"
+            android:textSize="12sp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModeOnePiece"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="One-piece"
+            android:textSize="12sp"/>
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <View
+        android:id="@+id/guidelineCenter"
+        android:layout_width="1dp"
+        android:layout_height="match_parent"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.55" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/mainCanvasCard"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/toolbar"
-        app:layout_constraintBottom_toTopOf="@id/btnGetFeedback"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="0dp"
+        style="@style/Widget.Material3.CardView.Filled"
+        app:cardBackgroundColor="#F4EFF4"
+        app:layout_constraintTop_toBottomOf="@id/outfitTypeToggleGroup"
+        app:layout_constraintBottom_toTopOf="@id/getFeedbackButton"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toStartOf="@id/guidelineCenter">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="8dp">
 
-            <!-- OUTERWEAR slot (optional) -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="OUTERWEAR  —  optional"
-                android:textSize="11sp"
-                android:letterSpacing="0.1"
-                android:textColor="#AAAAAA"
-                android:layout_marginBottom="8dp" />
-
-            <FrameLayout
-                android:id="@+id/slotOuterwear"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardOuterwear"
                 android:layout_width="match_parent"
-                android:layout_height="150dp"
-                android:background="@drawable/dashed_border_rect"
-                android:layout_marginBottom="16dp">
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_margin="4dp"
+                app:cardCornerRadius="14dp"
+                app:cardBackgroundColor="#EAE3EA"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+                <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                    <TextView android:id="@+id/plusOuterwear" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+ Outerwear" android:textSize="12sp" android:textStyle="bold" android:textColor="#7A757F" android:layout_gravity="center"/>
+                    <ImageView android:id="@+id/outerwearImage" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop"/>
+                    <ImageView android:id="@+id/removeOuterwear" android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="top|end" android:layout_margin="6dp" android:src="@android:drawable/ic_menu_close_clear_cancel" android:background="#CCFFFFFF" android:visibility="gone"/>
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                <ImageView
-                    android:id="@+id/imgOuterwear"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:visibility="gone" />
-
-                <LinearLayout
-                    android:id="@+id/emptyOuterwear"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:orientation="vertical"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:src="@drawable/ic_add_circle"
-                        app:tint="#DCD9DE" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Add outerwear"
-                        android:textSize="12sp"
-                        android:textColor="#AAAAAA"
-                        android:layout_marginTop="6dp" />
-                </LinearLayout>
-            </FrameLayout>
-
-            <!-- TOP slot -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="TOP"
-                android:textSize="11sp"
-                android:letterSpacing="0.1"
-                android:textColor="#AAAAAA"
-                android:layout_marginBottom="8dp" />
-
-            <FrameLayout
-                android:id="@+id/slotTop"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardTop"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:background="@drawable/dashed_border_rect"
-                android:layout_marginBottom="16dp">
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_margin="4dp"
+                app:cardCornerRadius="14dp"
+                app:cardBackgroundColor="#EAE3EA"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+                <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                    <TextView android:id="@+id/plusTop" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+ Add Top" android:textSize="12sp" android:textStyle="bold" android:textColor="#7A757F" android:layout_gravity="center"/>
+                    <ImageView android:id="@+id/topImage" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop"/>
+                    <ImageView android:id="@+id/removeTop" android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="top|end" android:layout_margin="6dp" android:src="@android:drawable/ic_menu_close_clear_cancel" android:background="#CCFFFFFF" android:visibility="gone"/>
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
 
-                <ImageView
-                    android:id="@+id/imgTop"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:visibility="gone" />
-
-                <LinearLayout
-                    android:id="@+id/emptyTop"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:orientation="vertical"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:src="@drawable/ic_add_circle"
-                        app:tint="#DCD9DE" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Select a top"
-                        android:textSize="12sp"
-                        android:textColor="#AAAAAA"
-                        android:layout_marginTop="6dp" />
-                </LinearLayout>
-
-                <!-- Clear button -->
-                <ImageButton
-                    android:id="@+id/btnClearTop"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_gravity="top|end"
-                    android:layout_margin="8dp"
-                    android:src="@drawable/ic_cancel"
-                    android:background="@drawable/circle_white_bg"
-                    android:padding="4dp"
-                    android:visibility="gone" />
-            </FrameLayout>
-
-            <!-- BOTTOM slot -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="BOTTOM"
-                android:textSize="11sp"
-                android:letterSpacing="0.1"
-                android:textColor="#AAAAAA"
-                android:layout_marginBottom="8dp" />
-
-            <FrameLayout
-                android:id="@+id/slotBottom"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardBottom"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:background="@drawable/dashed_border_rect"
-                android:layout_marginBottom="16dp">
-
-                <ImageView
-                    android:id="@+id/imgBottom"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:visibility="gone" />
-
-                <LinearLayout
-                    android:id="@+id/emptyBottom"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:orientation="vertical"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:src="@drawable/ic_add_circle"
-                        app:tint="#DCD9DE" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Select a bottom"
-                        android:textSize="12sp"
-                        android:textColor="#AAAAAA"
-                        android:layout_marginTop="6dp" />
-                </LinearLayout>
-
-                <ImageButton
-                    android:id="@+id/btnClearBottom"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:layout_gravity="top|end"
-                    android:layout_margin="8dp"
-                    android:src="@drawable/ic_cancel"
-                    android:background="@drawable/circle_white_bg"
-                    android:padding="4dp"
-                    android:visibility="gone" />
-            </FrameLayout>
-
-            <!-- FOOTWEAR slot (optional) -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="FOOTWEAR  —  optional"
-                android:textSize="11sp"
-                android:letterSpacing="0.1"
-                android:textColor="#AAAAAA"
-                android:layout_marginBottom="8dp" />
-
-            <FrameLayout
-                android:id="@+id/slotFootwear"
-                android:layout_width="match_parent"
-                android:layout_height="140dp"
-                android:background="@drawable/dashed_border_rect"
-                android:layout_marginBottom="24dp">
-
-                <ImageView
-                    android:id="@+id/imgFootwear"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:visibility="gone" />
-
-                <LinearLayout
-                    android:id="@+id/emptyFootwear"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:orientation="vertical"
-                    android:gravity="center">
-                    <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
-                        android:src="@drawable/ic_add_circle"
-                        app:tint="#DCD9DE" />
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Add footwear"
-                        android:textSize="12sp"
-                        android:textColor="#AAAAAA"
-                        android:layout_marginTop="6dp" />
-                </LinearLayout>
-            </FrameLayout>
-
-            <!-- Recommendations section -->
-            <TextView
-                android:id="@+id/tvRecommendTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="SUGGESTED MATCHES"
-                android:textSize="11sp"
-                android:letterSpacing="0.1"
-                android:textColor="#AAAAAA"
-                android:layout_marginBottom="12dp"
-                android:visibility="gone" />
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvRecommendations"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:visibility="gone" />
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:layout_margin="4dp"
+                app:cardCornerRadius="14dp"
+                app:cardBackgroundColor="#EAE3EA"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+                <FrameLayout android:layout_width="match_parent" android:layout_height="match_parent">
+                    <TextView android:id="@+id/plusBottom" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+ Add Bottom" android:textSize="12sp" android:textStyle="bold" android:textColor="#7A757F" android:layout_gravity="center"/>
+                    <ImageView android:id="@+id/bottomImage" android:layout_width="match_parent" android:layout_height="match_parent" android:scaleType="centerCrop"/>
+                    <ImageView android:id="@+id/removeBottom" android:layout_width="20dp" android:layout_height="20dp" android:layout_gravity="top|end" android:layout_margin="6dp" android:src="@android:drawable/ic_menu_close_clear_cancel" android:background="#CCFFFFFF" android:visibility="gone"/>
+                </FrameLayout>
+            </com.google.android.material.card.MaterialCardView>
 
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </com.google.android.material.card.MaterialCardView>
 
-    <!-- AI Feedback button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnGetFeedback"
+    <TextView
+        android:id="@+id/tvRecTitle"
         android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Recommendations"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        android:textColor="#7A757F"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="12dp"
+        app:layout_constraintTop_toBottomOf="@id/toolbar"
+        app:layout_constraintStart_toEndOf="@id/guidelineCenter"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/unifiedMatchesRecycler"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="8dp"
+        android:clipToPadding="false"
+        android:paddingBottom="16dp"
+        app:layout_constraintTop_toBottomOf="@id/tvRecTitle"
+        app:layout_constraintBottom_toTopOf="@id/getFeedbackButton"
+        app:layout_constraintStart_toEndOf="@id/guidelineCenter"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/getFeedbackButton"
+        android:layout_width="match_parent"
         android:layout_height="56dp"
         android:layout_margin="16dp"
         android:text="Get AI Styling Feedback"
-        android:textAllCaps="false"
+        android:textStyle="bold"
         android:textSize="15sp"
-        android:backgroundTint="#5D5CDE"
         app:cornerRadius="14dp"
-        app:icon="@drawable/ic_auto_awesome"
-        app:iconGravity="textStart"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        android:backgroundTint="#6750A4"
+        android:textColor="#FFFFFF"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
