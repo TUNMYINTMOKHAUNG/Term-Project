@@ -1,0 +1,5 @@
+0 Plain
+1 Checkered
+2 Dotted
+3 Striped
+4 Floral

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_trends"
+        android:icon="@drawable/ic_auto_awesome"
+        android:title="Trends" />
+    <item
+        android:id="@+id/nav_closet"
+        android:icon="@drawable/ic_checkroom"
+        android:title="Closet" />
+    <item
+        android:id="@+id/nav_upload"
+        android:icon="@drawable/ic_add_circle"
+        android:title="Upload" />
+<!--    <item-->
+<!--        android:id="@+id/nav_dressroom"-->
+<!--        android:icon="@drawable/ic_view_quilt"-->
+<!--        android:title="Dressroom" />-->
+    <item
+        android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_person"
+        android:title="Profile" />
+</menu>

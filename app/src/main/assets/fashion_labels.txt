@@ -1,0 +1,17 @@
+0 Dress
+1 Jean pants
+2 Cardigan
+3 Skirt
+4 Tshirt
+5 Shirt
+6 Jacket
+7 Hoodie
+8 Blouse
+9 Tank top
+10 Shorts
+11 Cargo pants
+12 Slacks
+13 Training pants
+14 Knitwear
+15 jumpsuit
+16 blazer
