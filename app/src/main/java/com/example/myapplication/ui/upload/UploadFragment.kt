@@ -1,22 +1,30 @@
 package com.example.myapplication.ui.upload
 
-import android.content.Intent
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import com.example.myapplication.R
-import com.example.myapplication.databinding.ActivityUploadBinding // Change to FragmentUploadBinding if you rename your XML file
+import com.example.myapplication.databinding.ActivityUploadBinding
+import java.io.File
 
 class UploadFragment : Fragment() {
 
-    // Fragments use a special binding setup to prevent memory leaks
     private var _binding: ActivityUploadBinding? = null
     private val binding get() = _binding!!
 
+    // Holds the URI of the photo the camera will write to
+    private var cameraImageUri: Uri? = null
+
+    // ── Gallery picker (already working) ─────────────────────────────
     private val pickImage = registerForActivityResult(
         ActivityResultContracts.GetContent()
     ) { uri ->
@@ -24,6 +32,30 @@ class UploadFragment : Fragment() {
             binding.imgPreview.visibility = View.VISIBLE
             binding.imgPreview.setImageURI(it)
             startAnalysis(it.toString())
+        }
+    }
+
+    // ── Camera capture result launcher (THE FIX) ──────────────────────
+    private val takePicture = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && cameraImageUri != null) {
+            binding.imgPreview.visibility = View.VISIBLE
+            binding.imgPreview.setImageURI(cameraImageUri)
+            startAnalysis(cameraImageUri.toString())
+        } else {
+            Toast.makeText(requireContext(), "Photo capture cancelled.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // ── Camera permission request (THE FIX) ────────────────────────────
+    private val requestCameraPermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            launchCamera()
+        } else {
+            Toast.makeText(requireContext(), "Camera permission is required to take a photo.", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -38,26 +70,45 @@ class UploadFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Hide the bottom nav setup, MainActivity handles it now!
-
         binding.btnCamera.setOnClickListener {
-            try {
-                val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-                startActivity(intent)
-            } catch (e: Exception) {
-                // Handle no camera
-            }
+            checkPermissionAndLaunchCamera()
         }
 
         binding.btnGallery.setOnClickListener {
             pickImage.launch("image/*")
         }
+    }
 
-        // Removed btnFinalUpload since you auto-navigate on gallery pick
+    private fun checkPermissionAndLaunchCamera() {
+        when {
+            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
+                    PackageManager.PERMISSION_GRANTED -> {
+                launchCamera()
+            }
+            else -> {
+                requestCameraPermission.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
+
+    private fun launchCamera() {
+        val photoFile = File.createTempFile(
+            "clothing_${System.currentTimeMillis()}_",
+            ".jpg",
+            requireContext().cacheDir
+        )
+
+        val uri = FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
+            photoFile
+        )
+
+        cameraImageUri = uri
+        takePicture.launch(uri)
     }
 
     private fun startAnalysis(imageUri: String) {
-        // Use a Bundle to pass the data instead of an Intent
         val bundle = Bundle().apply {
             putString("IMAGE_URI", imageUri)
         }
@@ -66,15 +117,14 @@ class UploadFragment : Fragment() {
             arguments = bundle
         }
 
-        // Swap the fragment inside the MainActivity
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, analysisFragment)
-            .addToBackStack(null) // This allows the user to press the back button to return to Upload!
+            .addToBackStack(null)
             .commit()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null // Clean up binding to prevent memory leaks
+        _binding = null
     }
 }

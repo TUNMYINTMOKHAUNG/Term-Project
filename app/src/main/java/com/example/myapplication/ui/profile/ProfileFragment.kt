@@ -1,12 +1,14 @@
 package com.example.myapplication.ui.profile
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.myapplication.R
 import com.example.myapplication.databinding.FragmentProfileBinding
 import com.example.myapplication.ui.onboarding.LoginActivity
 import com.google.android.material.chip.Chip
@@ -20,6 +22,27 @@ class ProfileFragment : Fragment() {
 
     private val auth = FirebaseAuth.getInstance()
     private val db = FirebaseFirestore.getInstance()
+
+    // Same color name -> hex map used on the Preferences page, so swatches match exactly
+    private val colorNameHexMap = mapOf(
+        "Black"    to "#1A1A1A",
+        "White"    to "#FFFFFF",
+        "Grey"     to "#9E9E9E",
+        "Beige"    to "#D8C3A5",
+        "Brown"    to "#6B4226",
+        "Navy"     to "#1B2A4A",
+        "Blue"     to "#2E5BFF",
+        "Sky Blue" to "#87CEEB",
+        "Green"    to "#2E7D32",
+        "Olive"    to "#6B8E23",
+        "Red"      to "#D32F2F",
+        "Burgundy" to "#6D1B2C",
+        "Pink"     to "#F48FB1",
+        "Pastel"   to "#F3D9E0",
+        "Purple"   to "#7E57C2",
+        "Yellow"   to "#FBC02D",
+        "Orange"   to "#F57C00"
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -53,20 +76,18 @@ class ProfileFragment : Fragment() {
 
         binding.tvEmail.text = user.email ?: "No email"
 
-        // Load preferences from Firestore
         db.collection("users").document(user.uid)
             .get()
             .addOnSuccessListener { doc ->
-                val styles = doc.get("preferredStyles") as? List<String> ?: emptyList()
-                val colors = doc.get("preferredColors") as? List<String> ?: emptyList()
-                displayChips(binding.chipGroupStyles, styles, "No styles selected yet")
-                displayChips(binding.chipGroupColors, colors, "No colors selected yet")
+                val styles = asStringList(doc.get("preferredStyles"))
+                val colors = asStringList(doc.get("preferredColors"))
+                displayStyleChips(styles)
+                displayColorChips(colors)
             }
             .addOnFailureListener {
                 Toast.makeText(requireContext(), "Could not load preferences.", Toast.LENGTH_SHORT).show()
             }
 
-        // Load closet item count
         db.collection("clothingItems")
             .get()
             .addOnSuccessListener { snapshot ->
@@ -74,29 +95,66 @@ class ProfileFragment : Fragment() {
             }
     }
 
-    private fun displayChips(
-        chipGroup: com.google.android.material.chip.ChipGroup,
-        items: List<String>,
-        emptyMessage: String
-    ) {
-        chipGroup.removeAllViews()
+    // Safely converts Firestore's Any? into a List<String>, item by item,
+    // avoiding the unchecked-cast warning from a direct "as? List<String>"
+    private fun asStringList(value: Any?): List<String> {
+        return (value as? List<*>)?.mapNotNull { it as? String } ?: emptyList()
+    }
+
+    private fun displayStyleChips(items: List<String>) {
+        binding.chipGroupStyles.removeAllViews()
         if (items.isEmpty()) {
-            val chip = Chip(requireContext()).apply {
-                text = emptyMessage
-                isClickable = false
-                isCheckable = false
-            }
-            chipGroup.addView(chip)
+            addPlaceholderChip(binding.chipGroupStyles, "No styles selected yet")
             return
         }
-        items.forEach { item ->
+        items.forEach { style ->
             val chip = Chip(requireContext()).apply {
-                text = item
+                text = style
                 isClickable = false
                 isCheckable = false
             }
-            chipGroup.addView(chip)
+            binding.chipGroupStyles.addView(chip)
         }
+    }
+
+    // FIX: colors now show their actual color as a swatch dot, same as the Preferences page
+    private fun displayColorChips(items: List<String>) {
+        binding.chipGroupColors.removeAllViews()
+        if (items.isEmpty()) {
+            addPlaceholderChip(binding.chipGroupColors, "No colors selected yet")
+            return
+        }
+        items.forEach { colorName ->
+            val hex = colorNameHexMap[colorName]
+            val chip = Chip(requireContext()).apply {
+                text = colorName
+                isClickable = false
+                isCheckable = false
+                if (hex != null) {
+                    chipIcon = androidx.core.content.ContextCompat.getDrawable(
+                        requireContext(), R.drawable.ic_color_swatch
+                    )
+                    chipIconTint = android.content.res.ColorStateList.valueOf(Color.parseColor(hex))
+                    isChipIconVisible = true
+
+                    // Light colors need a visible border against the white background
+                    if (hex == "#FFFFFF" || hex == "#F3D9E0") {
+                        chipStrokeColor = android.content.res.ColorStateList.valueOf(Color.parseColor("#CCCCCC"))
+                        chipStrokeWidth = 2f
+                    }
+                }
+            }
+            binding.chipGroupColors.addView(chip)
+        }
+    }
+
+    private fun addPlaceholderChip(chipGroup: com.google.android.material.chip.ChipGroup, message: String) {
+        val chip = Chip(requireContext()).apply {
+            text = message
+            isClickable = false
+            isCheckable = false
+        }
+        chipGroup.addView(chip)
     }
 
     private fun confirmLogout() {
