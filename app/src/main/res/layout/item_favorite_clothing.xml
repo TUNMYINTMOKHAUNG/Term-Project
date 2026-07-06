@@ -2,7 +2,7 @@
 <androidx.cardview.widget.CardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+    android:layout_width="112dp"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
@@ -25,19 +25,6 @@
                 android:scaleType="centerCrop" />
 
             <ImageView
-                android:id="@+id/deleteButton"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:src="@drawable/ic_cancel"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:layout_margin="8dp"
-                android:visibility="gone"
-                android:padding="6dp"
-                android:background="#FFFFFF"
-                android:scaleType="centerInside" />
-
-            <ImageView
                 android:id="@+id/btnHeart"
                 android:layout_width="40dp"
                 android:layout_height="40dp"
@@ -45,7 +32,7 @@
                 android:layout_alignParentEnd="true"
                 android:layout_margin="12dp"
                 android:padding="8dp"
-                android:src="@android:drawable/btn_star_big_off"
+                android:src="@android:drawable/btn_star_big_on"
                 android:background="@drawable/circle_background_white_border"
                 android:elevation="6dp" />
         </RelativeLayout>

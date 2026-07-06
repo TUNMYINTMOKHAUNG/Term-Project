@@ -30,7 +30,7 @@
                 android:layout_height="40dp"
                 android:layout_alignParentEnd="true"
                 android:layout_centerInParent="true"
-                android:text="CC Weather: ON"
+                android:text="Weather: ON"
                 android:textSize="12sp"
                 app:cornerRadius="8dp"
                 android:backgroundTint="#4CAF50"

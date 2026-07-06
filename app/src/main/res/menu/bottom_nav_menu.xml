@@ -3,7 +3,7 @@
     <item
         android:id="@+id/nav_trends"
         android:icon="@drawable/ic_auto_awesome"
-        android:title="Trends" />
+        android:title="Weather-based" />
     <item
         android:id="@+id/nav_closet"
         android:icon="@drawable/ic_checkroom"

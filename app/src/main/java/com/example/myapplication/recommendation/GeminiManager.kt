@@ -7,11 +7,10 @@ import kotlinx.coroutines.withContext
 
 object GeminiManager {
 
-    private const val GEMINI_API_KEY = "" // Make sure to provide your API key here
+    private const val GEMINI_API_KEY = ""
 
     suspend fun generateFeedback(prompt: String): String = withContext(Dispatchers.IO) {
         try {
-            // We tell Gemini to return a clean structured data scheme object matrix
             val config = generationConfig {
                 responseMimeType = "application/json"
             }
@@ -22,7 +21,6 @@ object GeminiManager {
                 generationConfig = config
             )
 
-            // Force strict structural guidelines inside the engineering prompt instruction sequence
             val structuredSystemPrompt = """
                 You are an expert AI fashion stylist analyzer. Analyze the outfit described against the user's event option constraint.
                 You must return your output strictly in JSON using the following structure with no markdown or formatting code outside it:

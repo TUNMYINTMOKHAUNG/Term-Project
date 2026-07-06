@@ -1,7 +1,6 @@
 package com.example.myapplication
 
 import android.content.Intent
-import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -55,7 +54,6 @@ class FeedbackActivity : AppCompatActivity() {
         binding.progressBar.visibility = View.VISIBLE
         binding.feedbackResultsPanel.visibility = View.GONE
 
-        // DYNAMIC PARSING: Extracts the real user choices sent from the dressroom slots
         val topType = intent.getStringExtra("TOP_TYPE") ?: "Top"
         val topColor = intent.getStringExtra("TOP_COLOR") ?: "Unknown Color"
         val topThickness = intent.getStringExtra("TOP_THICKNESS") ?: "Medium"
@@ -85,7 +83,6 @@ class FeedbackActivity : AppCompatActivity() {
             try {
                 val jsonObject = JSONObject(jsonRawResult)
 
-                // Parse Suitability
                 suitabilityScore = jsonObject.optInt("suitability_score", 50)
                 val suitArray = jsonObject.optJSONArray("suitability_reasons")
                 val suitBuilder = StringBuilder()
@@ -96,7 +93,6 @@ class FeedbackActivity : AppCompatActivity() {
                 }
                 suitabilityReasons = suitBuilder.toString().trim()
 
-                // Parse Combination
                 combinationScore = jsonObject.optInt("combination_score", 50)
                 val combArray = jsonObject.optJSONArray("combination_reasons")
                 val combBuilder = StringBuilder()
@@ -107,7 +103,6 @@ class FeedbackActivity : AppCompatActivity() {
                 }
                 combinationReasons = combBuilder.toString().trim()
 
-                // Parse Alternatives
                 val altArray = jsonObject.optJSONArray("alternatives")
                 val tempAlts = mutableListOf<String>()
                 if (altArray != null) {
@@ -117,7 +112,7 @@ class FeedbackActivity : AppCompatActivity() {
                 }
                 alternativesList = tempAlts
 
-                // Parse Styling Tips
+
                 val tipsArray = jsonObject.optJSONArray("styling_tips")
                 val tipsBuilder = StringBuilder()
                 if (tipsArray != null) {

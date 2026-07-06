@@ -12,10 +12,10 @@ data class Main(
 )
 
 data class WeatherCondition(
-    val main: String,        // "Rain", "Clear", "Clouds", "Snow", "Thunderstorm"
-    val description: String  // "light rain", "scattered clouds" etc
+    val main: String,
+    val description: String
 )
 
 data class Wind(
-    val speed: Double        // meters/second
+    val speed: Double
 )

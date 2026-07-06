@@ -5,6 +5,8 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.net.Uri
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.tensorflow.lite.Interpreter
 import java.io.FileInputStream
 import java.nio.ByteBuffer
@@ -13,35 +15,29 @@ import java.nio.channels.FileChannel
 
 object ImageAnalysisManager {
 
-    // Set to match your new Teachable Machine models
     private const val FASHION_MODEL_PATH = "fashion_model.tflite"
     private const val PATTERN_MODEL_PATH = "pattern_model.tflite"
-    private const val INPUT_SIZE = 224 // Teachable Machine standard size
+    private const val INPUT_SIZE = 224
 
-    fun analyzeImageOnDevice(
+    suspend fun analyzeImageOnDevice(
         context: Context,
-        imageUri: Uri,
-        onComplete: (ClothingAnalysis) -> Unit
-    ) {
+        imageUri: Uri
+    ): ClothingAnalysis = withContext(Dispatchers.IO) {
         try {
             val inputStream = context.contentResolver.openInputStream(imageUri)
             val originalBitmap = BitmapFactory.decodeStream(inputStream)
             inputStream?.close()
 
             if (originalBitmap == null) {
-                onComplete(getDefaultErrorAnalysis())
-                return
+                return@withContext getDefaultErrorAnalysis()
             }
 
             val softwareBitmap = originalBitmap.copy(Bitmap.Config.ARGB_8888, true)
-            // Resize to 224x224 for Teachable Machine models
             val scaledBitmap = Bitmap.createScaledBitmap(softwareBitmap, INPUT_SIZE, INPUT_SIZE, true)
 
-            // Run both models
             val fashionLabel = runCustomInference(context, scaledBitmap, FASHION_MODEL_PATH, getFashionLabels())
             val patternLabel = runCustomInference(context, scaledBitmap, PATTERN_MODEL_PATH, getPatternLabels())
 
-            // Map the 17 new categories to your 4 core UI types
             val parentType = when (fashionLabel) {
                 "Tshirt", "Shirt", "Cardigan", "Hoodie", "Blouse", "Tank top", "Knitwear" -> "Top"
                 "Jean pants", "Skirt", "Shorts", "Cargo pants", "Slacks", "Training pants" -> "Bottom"
@@ -50,34 +46,30 @@ object ImageAnalysisManager {
                 else -> "Top"
             }
 
-            // Map thickness based on the item
             val thickness = when (fashionLabel) {
                 "Jacket", "blazer", "Cardigan", "Hoodie", "Knitwear" -> "Thick"
                 "Tshirt", "Tank top", "Blouse", "Shorts", "Skirt" -> "Thin"
                 else -> "Medium"
             }
 
-            // Inside analyzeImageOnDevice
             val topHexes = extractTopColors(scaledBitmap)
 
-            val analysis = ClothingAnalysis(
+            ClothingAnalysis(
                 type = parentType,
                 name = fashionLabel,
                 pattern = patternLabel,
                 confidence = 0.9f,
-                color_hexes = topHexes, // Pass only hexes
+                color_hexes = topHexes,
                 styles = listOf("Casual"),
                 thickness = thickness
             )
-            onComplete(analysis)
 
         } catch (e: Exception) {
             e.printStackTrace()
-            onComplete(getDefaultErrorAnalysis())
+            getDefaultErrorAnalysis()
         }
     }
 
-    // A unified function that runs Teachable Machine Quantized models
     private fun runCustomInference(context: Context, bitmap: Bitmap, modelPath: String, labels: List<String>): String {
         val assetFileDescriptor = context.assets.openFd(modelPath)
         val inputStream = FileInputStream(assetFileDescriptor.fileDescriptor)
@@ -88,7 +80,6 @@ object ImageAnalysisManager {
 
         val interpreter = Interpreter(modelBuffer, Interpreter.Options())
 
-        // Quantized models use 1 byte per channel (RGB)
         val byteBuffer = ByteBuffer.allocateDirect(1 * INPUT_SIZE * INPUT_SIZE * 3)
         byteBuffer.order(ByteOrder.nativeOrder())
 
@@ -99,19 +90,16 @@ object ImageAnalysisManager {
         for (i in 0 until INPUT_SIZE) {
             for (j in 0 until INPUT_SIZE) {
                 val value = intValues[pixel++]
-                // Extract RGB and pass as bytes for Quantized models
                 byteBuffer.put((value shr 16 and 0xFF).toByte())
                 byteBuffer.put((value shr 8 and 0xFF).toByte())
                 byteBuffer.put((value and 0xFF).toByte())
             }
         }
 
-        // Output buffer for Quantized (Bytes)
         val outputProbabilityArray = Array(1) { ByteArray(labels.size) }
         interpreter.run(byteBuffer, outputProbabilityArray)
         interpreter.close()
 
-        // Find the index with the highest probability
         val maxIndex = outputProbabilityArray[0].indices.maxByOrNull {
             outputProbabilityArray[0][it].toInt() and 0xFF
         } ?: 0
@@ -162,7 +150,6 @@ object ImageAnalysisManager {
 
         val finalColors = uniqueColors.ifEmpty { listOf(bitmap.getPixel(bitmap.width / 2, bitmap.height / 2)) }
 
-        // Return just the Hex strings
         return finalColors.map { String.format("#%06X", 0xFFFFFF and it) }
     }
 
@@ -171,7 +158,6 @@ object ImageAnalysisManager {
         val g = Color.green(color)
         val b = Color.blue(color)
 
-        // A much smarter dictionary of standard clothing colors
         val knownColors = mapOf(
             "Black" to intArrayOf(0, 0, 0),
             "White" to intArrayOf(255, 255, 255),
@@ -197,7 +183,6 @@ object ImageAnalysisManager {
         var closestName = "Unknown"
         var minDistance = Double.MAX_VALUE
 
-        // Calculate the mathematical distance to find the most accurate name
         for ((name, rgb) in knownColors) {
             val dist = Math.sqrt(
                 Math.pow((r - rgb[0]).toDouble(), 2.0) +
@@ -217,7 +202,7 @@ object ImageAnalysisManager {
         name = "Clothing Item",
         pattern = "Plain",
         confidence = 0.0f,
-        color_hexes = listOf("#000000"), // Only hexes now
+        color_hexes = listOf("#000000"),
         styles = listOf("Casual"),
         thickness = "Medium"
     )

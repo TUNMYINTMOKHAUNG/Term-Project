@@ -10,8 +10,8 @@ object MatchingEngine {
         return allItems.filter { item ->
             val isDifferentCategory = item.type != selected.type
             val styleMatch = item.styleKeywords.any { it in selected.styleKeywords }
-            val colorMatch = isColorCompatible( //fixed temporarity cuz color should be lists
-                selected.color.firstOrNull() ?: "#FFFFFF", // Falls back to white if empty
+            val colorMatch = isColorCompatible(
+                selected.color.firstOrNull() ?: "#FFFFFF",
                 item.color.firstOrNull() ?: "#FFFFFF"
             )
             isDifferentCategory && (styleMatch || colorMatch)

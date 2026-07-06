@@ -77,7 +77,7 @@
                             <ImageView
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
-                                android:src="@drawable/ic_camera_alt"
+                                android:src="@android:drawable/ic_menu_camera"
                                 app:tint="#5D5CDE" />
                             <TextView
                                 android:layout_width="wrap_content"
@@ -106,7 +106,7 @@
                             <ImageView
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
-                                android:src="@drawable/ic_photo_library"
+                                android:src="@android:drawable/ic_menu_gallery"
                                 app:tint="#5D5CDE" />
                             <TextView
                                 android:layout_width="wrap_content"

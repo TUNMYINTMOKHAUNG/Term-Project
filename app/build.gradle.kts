@@ -3,7 +3,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
     // You can remove this line entirely since we chose to use Serializable instead of Parcelable!
-    id("kotlin-parcelize")
+    id("kotlin-kapt")
 }
 
 android {
@@ -56,6 +56,7 @@ dependencies {
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.cardview:cardview:1.0.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
     implementation(libs.androidx.activity)
 
     // Firebase (Using the newer 33.1.0 BOM & non-KTX libraries from your recommend branch)
@@ -82,6 +83,7 @@ dependencies {
     implementation("org.tensorflow:tensorflow-lite:2.14.0")
 
     // Testing Lifecycle Libraries
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.8.1")
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -16,6 +16,7 @@ import com.example.myapplication.databinding.FragmentClosetBinding
 import com.example.myapplication.model.ClothingItem
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.auth.FirebaseAuth
 
 class ClosetFragment : Fragment() {
     private var _binding: FragmentClosetBinding? = null
@@ -40,17 +41,13 @@ class ClosetFragment : Fragment() {
         binding.rvCloset.layoutManager = GridLayoutManager(requireContext(), 2)
 
         clothingAdapter = ClothingAdapter(
-            emptyList(),
-            { selectedItem ->
+            originalList = emptyList(),
+            onItemClick = { selectedItem ->
                 if (isEditMode) {
                     showDeleteConfirmation(selectedItem)
                 } else {
                     navigateToDressroom(selectedItem)
                 }
-            },
-            isEditMode = false,
-            { selectedItem ->
-                showDeleteConfirmation(selectedItem)
             }
         )
         binding.rvCloset.adapter = clothingAdapter
@@ -82,7 +79,7 @@ class ClosetFragment : Fragment() {
     private fun setupEditButton() {
         binding.btnEditCloset.setOnClickListener {
             isEditMode = !isEditMode
-            clothingAdapter.setEditMode(isEditMode)  // NEW
+            clothingAdapter.setEditMode(isEditMode)
             updateEditButtonUI()
             Toast.makeText(
                 requireContext(),
@@ -100,15 +97,29 @@ class ClosetFragment : Fragment() {
     }
 
     private fun loadClosetItemsFromCloud() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
         FirebaseFirestore.getInstance()
             .collection("clothingItems")
+            .whereEqualTo("ownerId", uid)
             .get()
             .addOnSuccessListener { snapshot ->
+                if (_binding == null) return@addOnSuccessListener
+
                 masterClothesList = snapshot.toObjects(ClothingItem::class.java)
-                applyCategoryFilter("All")
+
+                applyCategoryFilter(
+                    binding.tabLayout.getTabAt(binding.tabLayout.selectedTabPosition)
+                        ?.text
+                        ?.toString()
+                        ?: "All"
+                )
             }
             .addOnFailureListener { exception ->
                 Log.e("CLOSET_FIRESTORE", "Failed to load wardrobe data", exception)
+
+                if (_binding == null) return@addOnFailureListener
+
                 binding.tvItemCount.text = "Error loading clothes"
                 binding.emptyState.visibility = View.VISIBLE
                 binding.rvCloset.visibility = View.GONE
@@ -120,7 +131,11 @@ class ClosetFragment : Fragment() {
         clothingAdapter.filterByType(category)
 
         val visibleCount = clothingAdapter.itemCount
-        binding.tvItemCount.text = "$visibleCount items"
+        binding.tvItemCount.text = if (visibleCount == 1) {
+            "1 item"
+        } else {
+            "$visibleCount items"
+        }
 
         if (visibleCount == 0) {
             binding.emptyState.visibility = View.VISIBLE
@@ -161,8 +176,6 @@ class ClosetFragment : Fragment() {
                 masterClothesList = masterClothesList.filter { it.id != item.id }
                 applyCategoryFilter("All")
                 Toast.makeText(requireContext(), "Item deleted", Toast.LENGTH_SHORT).show()
-                isEditMode = false
-                updateEditButtonUI()
             }
             .addOnFailureListener { e ->
                 Log.e("CLOSET_DELETE", "Failed to delete item", e)

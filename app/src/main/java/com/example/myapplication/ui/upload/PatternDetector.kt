@@ -19,14 +19,14 @@ object PatternDetector {
         if (interpreter != null) return
 
         try {
-            // Load the .tflite model
+
             val assetFileDescriptor = context.assets.openFd("pattern_model.tflite")
             val inputStream = FileInputStream(assetFileDescriptor.fileDescriptor)
             val fileChannel = inputStream.channel
             val modelBuffer = fileChannel.map(FileChannel.MapMode.READ_ONLY, assetFileDescriptor.startOffset, assetFileDescriptor.declaredLength)
             interpreter = Interpreter(modelBuffer)
 
-            // Load the labels
+
             val labelList = mutableListOf<String>()
             BufferedReader(InputStreamReader(context.assets.open("labels.txt"))).use { reader ->
                 reader.forEachLine { if (it.isNotBlank()) labelList.add(it.trim()) }
@@ -40,7 +40,7 @@ object PatternDetector {
     fun detectPatternFromImage(bitmap: Bitmap): String {
         val tflite = interpreter ?: return "Other"
 
-        // Resize to 224x224 for MobileNetV2
+
         val resizedBitmap = Bitmap.createScaledBitmap(bitmap, 224, 224, true)
         val inputBuffer = ByteBuffer.allocateDirect(1 * 224 * 224 * 3 * 4).apply {
             order(ByteOrder.nativeOrder())
@@ -58,7 +58,7 @@ object PatternDetector {
         val output = Array(1) { FloatArray(labels.size) }
         tflite.run(inputBuffer, output)
 
-        // Get the best result
+
         val probabilities = output[0]
         var maxIdx = 0
         var maxConf = probabilities[0]
@@ -69,7 +69,6 @@ object PatternDetector {
             }
         }
 
-        // Return the label if confidence is high enough (e.g., > 50%)
         return if (maxConf > 0.5f) labels[maxIdx].replaceFirstChar { it.uppercase() } else "Other"
     }
 }

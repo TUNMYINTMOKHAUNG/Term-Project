@@ -3,6 +3,7 @@ package com.example.myapplication.ui.upload
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -12,8 +13,8 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.example.myapplication.R
-import com.example.myapplication.databinding.ActivityAnalysisBinding // Or FragmentAnalysisBinding if you renamed your XML
+import androidx.lifecycle.lifecycleScope
+import com.example.myapplication.databinding.ActivityAnalysisBinding
 import com.example.myapplication.model.ClothingItem
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.chip.Chip
@@ -22,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import java.util.UUID
 import android.content.res.ColorStateList
+import kotlinx.coroutines.launch
 
 class AnalysisFragment : Fragment() {
 
@@ -46,51 +48,134 @@ class AnalysisFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.toolbar.setNavigationOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
+        binding.toolbar.setNavigationOnClickListener { parentFragmentManager.popBackStack() }
 
-        // Setup Dropdowns (Notice `requireContext()` is used here now!)
         val categories = arrayOf("Top", "Bottom", "Outerwear", "One-piece")
         binding.typeDropdown.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, categories))
 
-        val garments = arrayOf(
-            "T-shirt", "Blouse", "Shirt", "Knitwear", "Sweater", "Tank top", "Jeans",
-            "Slacks", "Skirt", "Shorts", "Jacket", "Coat", "Cardigan", "Hoodie", "Dress",
-            "Cargo pants", "Training pants", "jumpsuit", "blazer"
-        )
+        val garments = arrayOf("T-shirt", "Blouse", "Shirt", "Knitwear", "Sweater", "Tank top", "Jeans", "Slacks", "Skirt", "Shorts", "Jacket", "Coat", "Cardigan", "Hoodie", "Dress", "Cargo pants", "Training pants", "jumpsuit", "blazer")
         binding.nameDropdown.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, garments))
 
         val thicknesses = arrayOf("Thin", "Medium", "Thick")
         binding.thicknessDropdown.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, thicknesses))
 
         val patterns = arrayOf("Plain", "Checkered", "Dotted", "Striped", "Floral")
-        binding.patternDropdown.setAdapter(
-            ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, patterns)
-        )
-
-        binding.patternDropdown.setOnItemClickListener { _, _, _, _ ->
-            updatePatternPreviewCircle(binding.patternDropdown.text.toString())
-        }
+        binding.patternDropdown.setAdapter(ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, patterns))
 
         setupPresetStyleChips()
 
         val imageUriString = arguments?.getString("IMAGE_URI")
-        imageUriString?.let { uriStr ->
-            localImageUri = Uri.parse(uriStr)
+        if (imageUriString != null) {
+            localImageUri = Uri.parse(imageUriString)
             binding.imgPreview.setImageURI(localImageUri)
 
-            ImageAnalysisManager.analyzeImageOnDevice(requireContext(), localImageUri!!) { analysisResult ->
-                activity?.runOnUiThread {
-                    updateUIWithAnalysis(analysisResult)
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    Log.d("ANALYSIS", "Starting background analysis...")
+
+                    val inputStream = requireContext().contentResolver.openInputStream(localImageUri!!)
+                    val originalBitmap = android.graphics.BitmapFactory.decodeStream(inputStream)
+                        ?: throw Exception("Failed to decode bitmap")
+
+                    val width = originalBitmap.width
+                    val height = originalBitmap.height
+                    val cropX = (width * 0.2).toInt()
+                    val cropY = (height * 0.2).toInt()
+                    val cropWidth = (width * 0.6).toInt()
+                    val cropHeight = (height * 0.6).toInt()
+
+                    val croppedBitmap = android.graphics.Bitmap.createBitmap(
+                        originalBitmap, cropX, cropY, cropWidth, cropHeight
+                    )
+
+                    Log.d("ANALYSIS", "Bitmap cropped: ${croppedBitmap.width}x${croppedBitmap.height}")
+
+                    val result = ImageAnalysisManager.analyzeImageOnDevice(requireContext(), localImageUri!!)
+
+                    val croppedColors = extractColorsFromBitmap(croppedBitmap)
+
+                    val finalResult = result.copy(color_hexes = croppedColors)
+
+                    Log.d("ANALYSIS", "Analysis successful: ${finalResult.name}")
+                    updateUIWithAnalysis(finalResult)
+                } catch (e: Exception) {
+                    Log.e("ANALYSIS", "Critical failure: ${e.message}")
+                    Toast.makeText(requireContext(), "Analysis failed: ${e.message}", Toast.LENGTH_LONG).show()
                 }
             }
+        } else {
+            Log.e("ANALYSIS", "No URI found in arguments!")
         }
 
         binding.btnSave.setOnClickListener { saveItemToCloset() }
     }
 
-    // --- HELPER FUNCTIONS NOW INCLUDED INSIDE THE CLASS ---
+    private fun extractColorsFromBitmap(bitmap: android.graphics.Bitmap): List<String> {
+        val colorMap = mutableMapOf<Int, Int>()
+        val width = bitmap.width
+        val height = bitmap.height
+
+        for (y in 0 until height step 4) {
+            for (x in 0 until width step 4) {
+                val pixel = bitmap.getPixel(x, y)
+                colorMap[pixel] = colorMap.getOrDefault(pixel, 0) + 1
+            }
+        }
+
+        val sortedHexes = colorMap.entries
+            .sortedByDescending { it.value }
+            .map { entry -> String.format("#%06X", (0xFFFFFF and entry.key)) }
+
+        val candidateHexes = sortedHexes.filter { hex -> !isBackgroundColor(hex) }
+
+        val sourceHexes = candidateHexes.ifEmpty { sortedHexes }
+
+        val distinctHexes = mutableListOf<String>()
+        for (hex in sourceHexes) {
+            val isDuplicate = distinctHexes.any { existing -> areColorsSimilar(hex, existing) }
+            if (!isDuplicate) {
+                distinctHexes.add(hex)
+            }
+            if (distinctHexes.size >= 3) break
+        }
+
+        return distinctHexes
+    }
+
+    private fun isBackgroundColor(hex: String): Boolean {
+        val color = android.graphics.Color.parseColor(hex)
+        val r = android.graphics.Color.red(color)
+        val g = android.graphics.Color.green(color)
+        val b = android.graphics.Color.blue(color)
+
+        // White or very light
+        if (r > 220 && g > 220 && b > 220) return true
+
+        // Very dark
+        if (r < 30 && g < 30 && b < 30) return true
+
+        // Gray tones
+        val avg = (r + g + b) / 3
+        if (r == g && g == b && avg > 150) return true
+
+        return false
+    }
+
+    private fun areColorsSimilar(hex1: String, hex2: String, threshold: Int = 40): Boolean {
+        return try {
+            val c1 = android.graphics.Color.parseColor(hex1)
+            val c2 = android.graphics.Color.parseColor(hex2)
+
+            val rDiff = android.graphics.Color.red(c1) - android.graphics.Color.red(c2)
+            val gDiff = android.graphics.Color.green(c1) - android.graphics.Color.green(c2)
+            val bDiff = android.graphics.Color.blue(c1) - android.graphics.Color.blue(c2)
+
+            val distance = kotlin.math.sqrt((rDiff * rDiff + gDiff * gDiff + bDiff * bDiff).toDouble())
+            distance < threshold
+        } catch (e: Exception) {
+            false
+        }
+    }
 
     private fun getCorrectedGarment(name: String, type: String): String {
         return when {
@@ -104,28 +189,24 @@ class AnalysisFragment : Fragment() {
         binding.chipGroupStyles.removeAllViews()
         val fashionKeywords = listOf("Casual", "Streetwear", "Formal", "Minimalist", "Vintage", "Sporty","Y2K", "Chic")
 
-        // 1. Define the rules for when a chip is Checked vs Unchecked
         val states = arrayOf(
             intArrayOf(android.R.attr.state_checked), // Checked state
-            intArrayOf(-android.R.attr.state_checked) // Unchecked state (the minus sign means "not")
+            intArrayOf(-android.R.attr.state_checked) // Unchecked state
         )
 
-        // 2. Define the Background Colors
         val bgColors = intArrayOf(
-            Color.parseColor("#5D5CDE"), // Checked: Your app's nice purple color
-            Color.parseColor("#FFFFFF")  // Unchecked: Clean white
+            Color.parseColor("#5D5CDE"),
+            Color.parseColor("#FFFFFF")
         )
 
-        // 3. Define the Text Colors
         val textColors = intArrayOf(
-            Color.WHITE,                  // Checked: White text
-            Color.parseColor("#1C1B1F")   // Unchecked: Dark text
+            Color.WHITE,
+            Color.parseColor("#1C1B1F")
         )
 
-        // 4. Define the Border (Stroke) Colors
         val strokeColors = intArrayOf(
-            Color.parseColor("#5D5CDE"), // Checked: Purple border
-            Color.parseColor("#DCD9DE")  // Unchecked: Light grey border
+            Color.parseColor("#5D5CDE"),
+            Color.parseColor("#DCD9DE")
         )
 
         fashionKeywords.forEach { keyword ->
@@ -133,16 +214,13 @@ class AnalysisFragment : Fragment() {
                 text = keyword
                 isCheckable = true
 
-                // Apply all our custom colors!
                 chipBackgroundColor = ColorStateList(states, bgColors)
                 setTextColor(ColorStateList(states, textColors))
                 chipStrokeColor = ColorStateList(states, strokeColors)
-                chipStrokeWidth = 3f // Gives it a nice visible border
+                chipStrokeWidth = 3f
 
-                // Add a subtle drop shadow to make it feel like a real button
                 elevation = 4f
 
-                // Make sure the little checkmark icon turns white too!
                 checkedIconTint = ColorStateList.valueOf(Color.WHITE)
             }
             binding.chipGroupStyles.addView(chip)
@@ -274,17 +352,16 @@ class AnalysisFragment : Fragment() {
         val finalThickness = binding.thicknessDropdown.text.toString()
         val finalPattern = binding.patternDropdown.text.toString()
 
+        val uri = localImageUri
+        if (uri == null) {
+            Toast.makeText(requireContext(), "Image not found.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         if (finalType.isBlank() || finalName.isBlank() || finalThickness.isBlank() || finalPattern.isBlank()) {
             Toast.makeText(requireContext(), "Please verify all fields are selected.", Toast.LENGTH_SHORT).show()
             return
         }
-
-        if (uid.isEmpty()) {
-            Toast.makeText(requireContext(), "Please log in to save items.", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val uri = localImageUri ?: return
 
         binding.btnSave.isEnabled = false
         binding.btnSave.text = "Uploading..."
@@ -297,31 +374,33 @@ class AnalysisFragment : Fragment() {
                 storageRef.downloadUrl.addOnSuccessListener { downloadUrl ->
                     val item = ClothingItem(
                         id = itemId,
+                        ownerId = uid,
                         imageUrl = downloadUrl.toString(),
                         name = finalName,
                         type = finalType,
                         color = if (analyzedColorHexList.isNotEmpty()) analyzedColorHexList else listOf("#FFFFFF"),
                         styleKeywords = getSelectedStyleKeywords(),
                         thickness = finalThickness,
-                        pattern = finalPattern
+                        pattern = finalPattern,
+                        isFavorite = false
                     )
 
                     db.collection("clothingItems").document(itemId).set(item)
                         .addOnSuccessListener {
-                            Toast.makeText(requireContext(), "Saved to your closet!", Toast.LENGTH_SHORT).show()
-                            parentFragmentManager.popBackStack() // Go back instead of finish()
+                            Toast.makeText(requireContext(), "Saved!", Toast.LENGTH_SHORT).show()
+                            parentFragmentManager.popBackStack()
                         }
                         .addOnFailureListener { e ->
                             binding.btnSave.isEnabled = true
                             binding.btnSave.text = "Save to Closet"
-                            Toast.makeText(requireContext(), "Save failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "Database error: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                 }
             }
             .addOnFailureListener { e ->
                 binding.btnSave.isEnabled = true
                 binding.btnSave.text = "Save to Closet"
-                Toast.makeText(requireContext(), "Image upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Upload failed: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 

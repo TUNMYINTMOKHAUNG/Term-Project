@@ -2,6 +2,7 @@ package com.example.myapplication.closet
 
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,12 +13,14 @@ import com.bumptech.glide.Glide
 import com.example.myapplication.databinding.ItemClothingCardBinding
 import com.example.myapplication.ui.upload.PatternCircleDrawable
 import com.example.myapplication.model.ClothingItem
+import com.example.myapplication.R
 
 class ClothingAdapter(
     private var originalList: List<ClothingItem>,
     private val onItemClick: ((ClothingItem) -> Unit)? = null,
     private var isEditMode: Boolean = false,
-    private val onDeleteClick: ((ClothingItem) -> Unit)? = null
+    private val onDeleteClick: ((ClothingItem) -> Unit)? = null,
+    private val isHorizontal: Boolean = false
 ) : RecyclerView.Adapter<ClothingAdapter.ViewHolder>() {
 
     private var displayList: List<ClothingItem> = originalList
@@ -29,97 +32,102 @@ class ClothingAdapter(
         val binding = ItemClothingCardBinding.inflate(
             LayoutInflater.from(parent.context), parent, false
         )
+
+        val params = binding.root.layoutParams
+
+        if (isHorizontal) {
+            val displayMetrics = parent.context.resources.displayMetrics
+            params.width = (displayMetrics.widthPixels * 0.45f).toInt()
+        } else {
+            params.width = ViewGroup.LayoutParams.MATCH_PARENT
+        }
+
+        binding.root.layoutParams = params
+
         return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val item = displayList[position]
+
+        Log.d("DEBUG_STAR", "Binding item ${item.id} | Favorite status is: ${item.isFavorite}")
+
         val context = holder.binding.root.context
 
         with(holder.binding) {
-            // 1. Text Update: Show category title ONLY (Color text removed)
-            //clothingLabel.text = item.type
+            Glide.with(context).load(item.imageUrl).centerCrop().into(clothingImage)
 
-            // 2. Load Item Image
-            Glide.with(context)
-                .load(item.imageUrl)
-                .centerCrop()
-                .into(clothingImage)
+            // Favorite Logic (State Reset & Click)
+            val btnHeart = btnHeart
 
-            // 3. Clear any recycled container leftover circle views
+            btnHeart.clearColorFilter()
+            btnHeart.setImageResource(android.R.drawable.btn_star_big_off)
+            if (item.isFavorite) {
+                btnHeart.setImageResource(android.R.drawable.btn_star_big_on)
+                btnHeart.setColorFilter(Color.parseColor("#FF4B4B"))
+            }
+
+            btnHeart.setOnClickListener {
+                val newFavoriteState = !item.isFavorite
+                item.isFavorite = newFavoriteState
+
+                if (newFavoriteState) {
+                    btnHeart.setImageResource(android.R.drawable.btn_star_big_on)
+                    btnHeart.setColorFilter(Color.parseColor("#FF4B4B"))
+                } else {
+                    btnHeart.setImageResource(android.R.drawable.btn_star_big_off)
+                    btnHeart.clearColorFilter()
+                }
+
+                // Database update
+                com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                    .collection("clothingItems")
+                    .document(item.id)
+                    .update("isFavorite", newFavoriteState)
+            }
+
+            // Color Circles Loop
             colorCirclesContainer.removeAllViews()
-
-            // 4. Dynamically generate circle color tokens
             item.color.forEach { colorString ->
                 if (colorString.isNotBlank()) {
-                    // Instantiating a generic framework view element
                     val circleView = View(context).apply {
-                        // Matching your exact 32dp layout design configuration specifications
                         val density = resources.displayMetrics.density
                         val pixelSize = (32 * density).toInt()
-
                         layoutParams = LinearLayout.LayoutParams(pixelSize, pixelSize).apply {
-                            // Add a subtle 6dp spacing margin right after each circle token item element
                             setMargins(0, 0, (6 * density).toInt(), 0)
                         }
-
-                        // Inflate your circle drawable layout asset frame properties safely
-                        val baseDrawable = ContextCompat.getDrawable(
-                            context,
-                            com.example.myapplication.R.drawable.color_circle
-                        )?.mutate() as? GradientDrawable
-
-                        // Handle and color-parse Hex codes safely (#FFFFFF vs FFFFFF)
+                        val baseDrawable = ContextCompat.getDrawable(context, R.drawable.color_circle)?.mutate() as? GradientDrawable
                         try {
                             val cleanHex = if (colorString.startsWith("#")) colorString else "#$colorString"
                             baseDrawable?.setColor(Color.parseColor(cleanHex))
                         } catch (e: Exception) {
-                            // Fallback default safe state representation tokens if parsing fails
-                            when (colorString.lowercase()) {
-                                "black" -> baseDrawable?.setColor(Color.BLACK)
-                                "white" -> baseDrawable?.setColor(Color.WHITE)
-                                "gray" -> baseDrawable?.setColor(Color.GRAY)
-                                else -> baseDrawable?.setColor(Color.LTGRAY)
-                            }
+                            baseDrawable?.setColor(Color.LTGRAY)
                         }
-
                         background = baseDrawable
                     }
-
-                    // Inject the view straight into the horizontal row arrangement layout
                     colorCirclesContainer.addView(circleView)
                 }
             }
 
-            holder.binding.patternIndicator.apply {
+            //Pattern & UI
+            patternIndicator.apply {
                 val density = resources.displayMetrics.density
                 val pixelSize = (32 * density).toInt()
                 layoutParams = LinearLayout.LayoutParams(pixelSize, pixelSize)
-
-                // Draw the pattern based on the database value
                 background = PatternCircleDrawable(item.pattern ?: "Other")
             }
 
-            // NEW: Show/hide delete button based on edit mode
             deleteButton.visibility = if (isEditMode) View.VISIBLE else View.GONE
-
-            // NEW: Handle delete button click
-            deleteButton.setOnClickListener {
-                onDeleteClick?.invoke(item)
-            }
-
-            // Click interaction assignment mappings
-            root.setOnClickListener {
-                onItemClick?.invoke(item)
-            }
+            deleteButton.setOnClickListener { onDeleteClick?.invoke(item) }
+            root.setOnClickListener { onItemClick?.invoke(item) }
         }
     }
 
     override fun getItemCount(): Int = displayList.size
 
     fun updateList(newList: List<ClothingItem>) {
-        originalList = newList
-        displayList = newList
+        this.originalList = newList
+        this.displayList = newList
         notifyDataSetChanged()
     }
 
@@ -132,7 +140,6 @@ class ClothingAdapter(
         notifyDataSetChanged()
     }
 
-    // NEW: Set edit mode and refresh
     fun setEditMode(editMode: Boolean) {
         isEditMode = editMode
         notifyDataSetChanged()

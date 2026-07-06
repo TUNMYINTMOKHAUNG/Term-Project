@@ -35,7 +35,6 @@ class LoginActivity : AppCompatActivity() {
 
         auth = FirebaseAuth.getInstance()
 
-        // Already signed in -> skip straight to main app
         if (auth.currentUser != null) {
             goToMain()
             return
@@ -110,7 +109,6 @@ class LoginActivity : AppCompatActivity() {
 
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { result ->
-                // FIX: also create a user document in Firestore so email/profile data is saved
                 val userId = result.user?.uid ?: return@addOnSuccessListener
                 val userDoc = hashMapOf(
                     "email" to email,
@@ -123,7 +121,6 @@ class LoginActivity : AppCompatActivity() {
                     .set(userDoc, SetOptions.merge())
                     .addOnSuccessListener {
                         setLoading(false)
-                        // New user -> go to preferences screen first
                         startActivity(Intent(this, PreferencesActivity::class.java))
                         finish()
                     }

@@ -11,13 +11,11 @@ import org.json.JSONObject
 
 object GeminiRestManager {
 
-    private const val API_KEY = "" //second api key
+    private const val API_KEY = ""
     private const val API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
-    // ^^^^^^^^^^^ changed
 
     suspend fun generateFeedback(prompt: String): String = withContext(Dispatchers.IO) {
         try {
-            // In GeminiRestManager.kt
             val client = OkHttpClient.Builder()
                 .connectTimeout(30, java.util.concurrent.TimeUnit.SECONDS) // Time to establish connection
                 .readTimeout(30, java.util.concurrent.TimeUnit.SECONDS)    // Time to wait for data

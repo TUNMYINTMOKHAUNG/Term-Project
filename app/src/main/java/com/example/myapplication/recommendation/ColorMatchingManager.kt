@@ -1,26 +1,36 @@
 package com.example.myapplication.recommendation
 
 import android.graphics.Color
-import android.util.Log
 import com.example.myapplication.model.ClothingItem
 import kotlin.math.pow
 import kotlin.math.sqrt
 
 object ColorMatchingManager {
+    const val MAX_COLOR_DISTANCE = 441.67
+
     fun findMatchingClothes(targetHex: String, clothes: List<ClothingItem>, maxMatches: Int): List<ClothingItem> {
         return clothes.sortedByDescending { item ->
             val itemColor = safeParseColor(item.color.firstOrNull() ?: "#FFFFFF") ?: 0xFFFFFF
             val targetColor = safeParseColor(targetHex) ?: 0xFFFFFF
 
-            // Score based on distance (closer = higher score)
             var score = 500.0 - calculateColorDistance(targetColor, itemColor).coerceAtMost(500.0)
 
-            // Bonus for neutrals (black leather, white shirt, etc)
             if (isNeutral(itemColor)) score += 200.0
 
             score
         }.take(maxMatches)
     }
+    fun colorDistance(hex1: String, hex2: String): Double {
+        val c1 = safeParseColor(hex1) ?: 0xFFFFFF
+        val c2 = safeParseColor(hex2) ?: 0xFFFFFF
+        return calculateColorDistance(c1, c2)
+    }
+
+    fun isNeutralColor(hex: String): Boolean {
+        val color = safeParseColor(hex) ?: return false
+        return isNeutral(color)
+    }
+
 
     private fun isNeutral(color: Int): Boolean {
         val r = Color.red(color)

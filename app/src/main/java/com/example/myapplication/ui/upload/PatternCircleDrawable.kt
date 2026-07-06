@@ -18,13 +18,11 @@ class PatternCircleDrawable(private val pattern: String) : Drawable() {
         canvas.save()
         canvas.clipPath(circlePath)
 
-        // Inside PatternCircleDrawable.kt -> draw()
-// Use lowercase and trim to ensure it matches no matter how it was saved
         val normalizedPattern = pattern?.lowercase()?.trim() ?: "plain"
 
         when (normalizedPattern) {
             "plain" -> drawPlain(canvas, rect)
-            "stripes", "striped" -> drawStripes(canvas, rect) // Added "striped" as a fallback
+            "stripes", "striped" -> drawStripes(canvas, rect)
             "dotted" -> drawDotted(canvas, rect)
             "checkered" -> drawCheckered(canvas, rect)
             "floral" -> drawFloral(canvas, rect)
@@ -33,18 +31,41 @@ class PatternCircleDrawable(private val pattern: String) : Drawable() {
 
         canvas.restore()
 
-        // Inside draw(canvas: Canvas)
         paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 4f // Make it slightly thicker to match MaterialCardView borders
+        paint.strokeWidth = 4f
         paint.color = Color.parseColor("#CCCCCC")
-        canvas.drawOval(rect, paint) // This draws the circle border
+        canvas.drawOval(rect, paint)
     }
 
-    // --- Drawing Methods ---
     private fun drawPlain(canvas: Canvas, rect: RectF) {
         paint.style = Paint.Style.FILL
-        paint.color = Color.parseColor("#EAEAEA")
+        paint.color = Color.parseColor("#F2F2F2")
         canvas.drawRect(rect, paint)
+
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = rect.width() / 13f
+        paint.strokeCap = Paint.Cap.ROUND
+        paint.color = Color.parseColor("#9E9E9E")
+
+        val padding = rect.width() * 0.30f
+
+        canvas.drawLine(
+            rect.left + padding,
+            rect.top + padding,
+            rect.right - padding,
+            rect.bottom - padding,
+            paint
+        )
+
+        canvas.drawLine(
+            rect.right - padding,
+            rect.top + padding,
+            rect.left + padding,
+            rect.bottom - padding,
+            paint
+        )
+
+        paint.strokeCap = Paint.Cap.BUTT
     }
 
     private fun drawStripes(canvas: Canvas, rect: RectF) {
@@ -122,7 +143,6 @@ class PatternCircleDrawable(private val pattern: String) : Drawable() {
         canvas.drawRect(rect, paint)
     }
 
-    // --- Required Drawable Overrides ---
     override fun setAlpha(alpha: Int) { paint.alpha = alpha }
     override fun setColorFilter(colorFilter: ColorFilter?) { paint.colorFilter = colorFilter }
     override fun getOpacity(): Int = PixelFormat.TRANSLUCENT

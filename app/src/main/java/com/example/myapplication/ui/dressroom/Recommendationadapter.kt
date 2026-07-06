@@ -8,10 +8,6 @@ import com.example.myapplication.databinding.ItemClothingCardBinding
 import com.example.myapplication.ui.upload.PatternCircleDrawable
 import com.example.myapplication.model.ClothingItem
 
-/**
- * Lightweight adapter used by DressroomActivity to display MatchingEngine suggestions.
- * Re-uses item_clothing_card.xml so no new layout is needed.
- */
 class RecommendationAdapter(
     private val items: List<ClothingItem>,
     private val onItemClick: (ClothingItem) -> Unit
@@ -35,14 +31,8 @@ class RecommendationAdapter(
                 .centerCrop()
                 .into(clothingImage)
 
-            // Ensure the size matches your color circles (48dp)
-            // and apply the drawable
-            // Inside onBindViewHolder
-            // Use the pattern string directly from your database object
             val patternName = item.pattern ?: "Other"
 
-            // This triggers the draw() method in PatternCircleDrawable
-            // based on the string value (e.g., "Stripes", "Floral")
             holder.binding.patternIndicator.background = PatternCircleDrawable(patternName)
 
             root.setOnClickListener { onItemClick(item) }

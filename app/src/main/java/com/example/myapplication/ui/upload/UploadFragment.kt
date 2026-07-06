@@ -17,50 +17,39 @@ import com.example.myapplication.databinding.ActivityUploadBinding
 import java.io.File
 
 class UploadFragment : Fragment() {
-
     private var _binding: ActivityUploadBinding? = null
     private val binding get() = _binding!!
 
-    // Holds the URI of the photo the camera will write to
     private var cameraImageUri: Uri? = null
 
-    // ── Gallery picker (already working) ─────────────────────────────
-    private val pickImage = registerForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri ->
+    private val pickImage = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let {
-            binding.imgPreview.visibility = View.VISIBLE
-            binding.imgPreview.setImageURI(it)
             startAnalysis(it.toString())
         }
     }
 
-    // ── Camera capture result launcher (THE FIX) ──────────────────────
-    private val takePicture = registerForActivityResult(
-        ActivityResultContracts.TakePicture()
-    ) { success ->
-        if (success && cameraImageUri != null) {
-            binding.imgPreview.visibility = View.VISIBLE
-            binding.imgPreview.setImageURI(cameraImageUri)
-            startAnalysis(cameraImageUri.toString())
+    private val takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            cameraImageUri?.let {
+                startAnalysis(it.toString())
+            }
         } else {
-            Toast.makeText(requireContext(), "Photo capture cancelled.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "Camera cancelled.", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // ── Camera permission request (THE FIX) ────────────────────────────
-    private val requestCameraPermission = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { granted ->
-        if (granted) {
-            launchCamera()
-        } else {
-            Toast.makeText(requireContext(), "Camera permission is required to take a photo.", Toast.LENGTH_LONG).show()
+    private val requestCameraPermission =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            if (granted) {
+                launchCamera()
+            } else {
+                Toast.makeText(requireContext(), "Camera permission required.", Toast.LENGTH_SHORT).show()
+            }
         }
-    }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         _binding = ActivityUploadBinding.inflate(inflater, container, false)
@@ -79,48 +68,46 @@ class UploadFragment : Fragment() {
         }
     }
 
-    private fun checkPermissionAndLaunchCamera() {
-        when {
-            ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) ==
-                    PackageManager.PERMISSION_GRANTED -> {
-                launchCamera()
-            }
-            else -> {
-                requestCameraPermission.launch(Manifest.permission.CAMERA)
-            }
-        }
-    }
-
-    private fun launchCamera() {
-        val photoFile = File.createTempFile(
-            "clothing_${System.currentTimeMillis()}_",
-            ".jpg",
-            requireContext().cacheDir
-        )
-
-        val uri = FileProvider.getUriForFile(
-            requireContext(),
-            "${requireContext().packageName}.fileprovider",
-            photoFile
-        )
-
-        cameraImageUri = uri
-        takePicture.launch(uri)
-    }
-
-    private fun startAnalysis(imageUri: String) {
-        val bundle = Bundle().apply {
-            putString("IMAGE_URI", imageUri)
-        }
-
+    private fun startAnalysis(imageUriString: String) {
         val analysisFragment = AnalysisFragment().apply {
-            arguments = bundle
+            arguments = Bundle().apply {
+                putString("IMAGE_URI", imageUriString)
+            }
         }
 
         parentFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, analysisFragment)
             .addToBackStack(null)
             .commit()
+    }
+
+    private fun checkPermissionAndLaunchCamera() {
+        if (
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            launchCamera()
+        } else {
+            requestCameraPermission.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun launchCamera() {
+        val photoFile = File.createTempFile(
+            "clothing_",
+            ".jpg",
+            requireContext().cacheDir
+        )
+
+        cameraImageUri = FileProvider.getUriForFile(
+            requireContext(),
+            "${requireContext().packageName}.fileprovider",
+            photoFile
+        )
+
+        takePicture.launch(cameraImageUri)
     }
 
     override fun onDestroyView() {

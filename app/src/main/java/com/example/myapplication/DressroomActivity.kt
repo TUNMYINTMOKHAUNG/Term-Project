@@ -1,7 +1,6 @@
 package com.example.myapplication
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageView
@@ -20,8 +19,6 @@ import retrofit2.Callback
 import retrofit2.Response
 import android.content.Intent
 import android.widget.Toast
-import android.widget.FrameLayout
-import com.example.myapplication.FeedbackActivity
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.card.MaterialCardView
 
@@ -131,7 +128,6 @@ class DressroomActivity : AppCompatActivity() {
             }
         }
 
-        // FIXED: Bottom remains fully clickable and interactive across both modes
         cardBottomSlot.setOnClickListener {
             if (currentBottom == null) {
                 updatePickerState("Bottom")
@@ -152,7 +148,6 @@ class DressroomActivity : AppCompatActivity() {
             val intent = Intent(this, FeedbackActivity::class.java)
 
             if (currentOutfitMode == "Separates") {
-                // Mode 1: 2-Piece require BOTH elements
                 if (currentTop == null || currentBottom == null) {
                     Toast.makeText(this, "Please select both Top and Bottom components", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
@@ -165,7 +160,6 @@ class DressroomActivity : AppCompatActivity() {
                 intent.putExtra("BOTTOM_COLOR", currentBottom?.color?.firstOrNull() ?: "#FFFFFF")
                 intent.putExtra("BOTTOM_THICKNESS", currentBottom?.thickness ?: "Medium")
             } else {
-                // Mode 2: One-piece mode ONLY requires the dress to move forward
                 if (currentOnePiece == null) {
                     Toast.makeText(this, "Please select a One-piece garment", Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
@@ -174,7 +168,6 @@ class DressroomActivity : AppCompatActivity() {
                 intent.putExtra("TOP_COLOR", currentOnePiece?.color?.firstOrNull() ?: "#FFFFFF")
                 intent.putExtra("TOP_THICKNESS", currentOnePiece?.thickness ?: "Medium")
 
-                // If they picked an optional bottom with the dress, send it to the AI! Otherwise pass "None"
                 if (currentBottom != null) {
                     intent.putExtra("BOTTOM_TYPE", currentBottom?.type ?: "Bottom")
                     intent.putExtra("BOTTOM_COLOR", currentBottom?.color?.firstOrNull() ?: "#FFFFFF")
@@ -210,7 +203,6 @@ class DressroomActivity : AppCompatActivity() {
                 tvPlusTopLabel.text = "+ Add Top"
             }
         } else {
-            // In One-piece mode, change label text to signify it's optional, but leave it fully functional
             if (currentBottom == null) {
                 tvPlusBottomLabel.text = "+ Add Bottom (Optional)"
             }
@@ -272,11 +264,11 @@ class DressroomActivity : AppCompatActivity() {
             plusText.visibility = View.GONE
 
             if (category == "One-piece") {
-                updatePickerState("Outerwear")  // Show outerwear options next
+                updatePickerState("Outerwear")
             } else if (category == "Top") {
-                updatePickerState("Bottom")  // Show bottom options after top
+                updatePickerState("Bottom")
             } else if (category == "Bottom" || category == "Outerwear") {
-                updatePickerState("Top")  // Show outerwear options after bottom
+                updatePickerState("Top")
             }
 
         } else {
@@ -339,7 +331,6 @@ class DressroomActivity : AppCompatActivity() {
             }
         }
 
-        // FIXED: Use current weather thickness, not chosen clothes thickness
         if (isWeatherFilterOn) {
             categoryClothes = categoryClothes.filter { it.thickness == currentWeatherThickness }
         }
@@ -347,7 +338,12 @@ class DressroomActivity : AppCompatActivity() {
         val isCanvasEmpty = currentTop == null && currentBottom == null && currentOuterwear == null && currentOnePiece == null
 
         if (isCanvasEmpty) {
-            unifiedMatchesRecycler.adapter = DressroomMatchAdapter(categoryClothes) { selectedItem ->
+            val sortedItems = categoryClothes.sortedWith(
+                compareByDescending<ClothingItem> { it.thickness.equals(currentWeatherThickness, ignoreCase = true) }
+                    .thenByDescending { it.isFavorite }
+            )
+
+            unifiedMatchesRecycler.adapter = DressroomMatchAdapter(sortedItems) { selectedItem ->
                 setSlotItem(activePickerCategory, selectedItem)
                 loadColorMatches(selectedItem)
                 updatePickerState("None")
@@ -356,9 +352,16 @@ class DressroomActivity : AppCompatActivity() {
             val anchorItem = currentTop ?: currentBottom ?: currentOuterwear ?: currentOnePiece ?: todaysPick
             val searchColor = matchingColors.firstOrNull() ?: anchorItem?.color?.firstOrNull { it.isNotBlank() } ?: "#FFFFFF"
 
-            val matchedItems = ColorMatchingManager.findMatchingClothes(searchColor, categoryClothes, 50)
+            val sortedItems = categoryClothes.sortedWith(
+                compareByDescending<ClothingItem> { it.thickness.equals(currentWeatherThickness, ignoreCase = true) }
+                    .thenBy { item ->
+                        val itemColor = item.color.firstOrNull { it.isNotBlank() } ?: "#FFFFFF"
+                        ColorMatchingManager.colorDistance(itemColor, searchColor)
+                    }
+                    .thenByDescending { it.isFavorite }
+            ).take(50)
 
-            unifiedMatchesRecycler.adapter = DressroomMatchAdapter(matchedItems) { selectedItem ->
+            unifiedMatchesRecycler.adapter = DressroomMatchAdapter(sortedItems) { selectedItem ->
                 setSlotItem(activePickerCategory, selectedItem)
                 updatePickerState("None")
             }

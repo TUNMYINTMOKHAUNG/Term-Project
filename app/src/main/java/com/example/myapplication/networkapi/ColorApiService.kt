@@ -8,8 +8,8 @@ interface ColorApiService {
 
     @GET("scheme")
     fun getColorScheme(
-        @Query("hex") hex: String,           // color without #, e.g. "FF5733"
-        @Query("mode") mode: String = "triad", // triad, analogic, complement, etc
+        @Query("hex") hex: String,
+        @Query("mode") mode: String = "triad",
         @Query("count") count: Int = 5
     ): Call<ColorSchemeResponse>
 }
@@ -23,5 +23,5 @@ data class ColorData(
 )
 
 data class ColorHex(
-    val value: String  // "#FF5733"
+    val value: String
 )

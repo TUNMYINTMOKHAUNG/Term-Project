@@ -5,7 +5,6 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import com.example.myapplication.databinding.ActivityMainBinding
 import com.example.myapplication.networkapi.RetrofitInstance
 import com.example.myapplication.networkapi.WeatherResponse
@@ -25,7 +24,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // If not logged in, send to login screen first
         if (FirebaseAuth.getInstance().currentUser == null) {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
@@ -36,6 +34,8 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        loadFragment(RecommendationFragment())
+
         setupBottomNavigation()
         fetchWeatherData()
     }
@@ -45,60 +45,52 @@ class MainActivity : AppCompatActivity() {
             city = "Busan",
             apiKey = "79038bb0b4317e59d829c8518fde3a44"
         ).enqueue(object : Callback<WeatherResponse> {
-
-            override fun onResponse(
-                call: Call<WeatherResponse>,
-                response: Response<WeatherResponse>
-            ) {
+            override fun onResponse(call: Call<WeatherResponse>, response: Response<WeatherResponse>) {
                 if (response.isSuccessful) {
-                    val body = response.body()
-                    val temp      = body?.main?.temp ?: 0.0
-                    val condition = body?.weather?.firstOrNull()?.main ?: "Clear"
-                    val windSpeed = body?.wind?.speed ?: 0.0
-                    val humidity  = body?.main?.humidity ?: 50
-
-                    Log.d("WEATHER", "Temp: $temp, Condition: $condition, Wind: $windSpeed, Humidity: $humidity")
-
+                    val body = response.body() ?: return
                     val bundle = Bundle().apply {
-                        putDouble("TEMPERATURE", temp)
-                        putString("CONDITION", condition)
-                        putDouble("WIND_SPEED", windSpeed)
-                        putInt("HUMIDITY", humidity)
+                        putDouble("TEMPERATURE", body.main?.temp ?: 0.0)
+                        putString("CONDITION", body.weather?.firstOrNull()?.main ?: "Clear")
+                        putDouble("WIND_SPEED", body.wind?.speed ?: 0.0)
+                        putInt("HUMIDITY", body.main?.humidity ?: 50)
                     }
 
-                    val recommendationFragment = RecommendationFragment().apply {
-                        arguments = bundle
+                    val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+                    if (currentFragment is RecommendationFragment) {
+                        currentFragment.arguments = bundle
+
                     }
-                    loadFragment(recommendationFragment)
-                } else {
-                    loadFragment(RecommendationFragment())
                 }
             }
 
             override fun onFailure(call: Call<WeatherResponse>, t: Throwable) {
                 Log.e("WEATHER", "Failed: ${t.message}")
-                loadFragment(RecommendationFragment())
             }
         })
     }
 
     private fun setupBottomNavigation() {
         binding.bottomNav.setOnItemSelectedListener { item ->
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.fragmentContainer)
+
             when (item.itemId) {
                 R.id.nav_trends -> {
-                    fetchWeatherData()
+                    if (currentFragment !is RecommendationFragment) {
+                        loadFragment(RecommendationFragment())
+                        fetchWeatherData()
+                    }
                     true
                 }
                 R.id.nav_closet -> {
-                    loadFragment(ClosetFragment())
+                    if (currentFragment !is ClosetFragment) loadFragment(ClosetFragment())
                     true
                 }
                 R.id.nav_upload -> {
-                    loadFragment(UploadFragment())
-                    false
+                    if (currentFragment !is UploadFragment) loadFragment(UploadFragment())
+                    true
                 }
                 R.id.nav_profile -> {
-                    loadFragment(ProfileFragment())
+                    if (currentFragment !is ProfileFragment) loadFragment(ProfileFragment())
                     true
                 }
                 else -> false
@@ -106,7 +98,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun loadFragment(fragment: Fragment) {
+    private fun loadFragment(fragment: androidx.fragment.app.Fragment) {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragmentContainer, fragment)
             .commit()
